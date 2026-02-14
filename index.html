@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>For You ❤️</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%);
+            font-family: 'Poppins', sans-serif;
+            overflow: hidden;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            text-align: center;
+            max-width: 90%;
+            width: 350px;
+            transition: transform 0.3s;
+            z-index: 10;
+            position: relative;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        img {
+            width: 150px;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 50%;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+
+        h1 {
+            color: #ff4d6d;
+            font-size: 1.5rem;
+            margin-bottom: 30px;
+            min-height: 3.5rem;
+        }
+
+        .btn-group {
+            position: relative;
+            height: 50px;
+        }
+
+        button {
+            padding: 10px 25px;
+            font-size: 1rem;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: 600;
+            transition: all 0.3s;
+            outline: none;
+        }
+
+        #yesBtn {
+            background-color: #ff4d6d;
+            color: white;
+            box-shadow: 0 4px 15px rgba(255, 77, 109, 0.4);
+            margin-right: 10px;
+        }
+
+        #yesBtn:hover {
+            background-color: #d63353;
+            transform: scale(1.1);
+        }
+
+        #noBtn {
+            background-color: white;
+            color: #333;
+            border: 2px solid #ddd;
+        }
+
+        .footer {
+            position: fixed;
+            bottom: 15px;
+            width: 100%;
+            text-align: center;
+            font-size: 0.9rem;
+            color: #ff4d6d;
+            font-weight: 600;
+            opacity: 0.8;
+            pointer-events: none;
+            z-index: 20;
+        }
+        
+        canvas {
+            display: block; 
+        }
+        
+        /* Floating GIFs styling */
+        .floating-gif {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            border-radius: 10px;
+            opacity: 0.7;
+            z-index: 1;
+            pointer-events: none;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        /* Success GIF styling */
+        .success-gif {
+            width: 180px;
+            height: 180px;
+            border-radius: 20px;
+            margin: 20px auto;
+            display: block;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        }
+        
+        /* GIF container */
+        .gif-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 0;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="gif-container" id="gifContainer"></div>
+    
+    <div class="card">
+        <img id="mainImg" src="https://files.catbox.moe/nm9pgm.jpg" alt="Cute Cat">
+        <h1 id="question">Do you love me? 🙈</h1>
+        
+        <div class="btn-group">
+            <button id="yesBtn">Yes</button>
+            <button id="noBtn">No</button>
+        </div>
+    </div>
+
+    <div class="footer">Made by Mr Tohid</div>
+
+    <script src="https://cdn.jsdelivr.net/npm/js-confetti@latest/dist/js-confetti.browser.js"></script>
+
+    <script>
+        const yesBtn = document.getElementById('yesBtn');
+        const noBtn = document.getElementById('noBtn');
+        const question = document.getElementById('question');
+        const mainImg = document.getElementById('mainImg');
+        const gifContainer = document.getElementById('gifContainer');
+        
+        // Initialize the confetti instance
+        const jsConfetti = new JSConfetti();
+        
+        // GIF URLs
+        const gifUrls = [
+            "https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExc3F0bGJkdzg0MXhlc29lY3U3YnU4YmwwcGN3cW1jMjMxcHh4d21pcCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/nNfRs2Unc5VxI3VnQB/giphy.gif",
+            "https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExcm10N3F4Yms3aGY3aTk3eXRydXpkZ3Jxd3R0bDVuMGk4YzF3OTcxcSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/f9EmXxglhdhAj1bo28/giphy.gif",
+            "https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExMzZza25iNXhzZHkxYjlieHR0OW5hMDVyOWljZDE4NHFsamtrMXV6NSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/1JmGiBtqTuehfYxuy9/giphy.gif",
+            "https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExMnFjdTl1NnkxYXF0b2c2OTJzOHQxbGE4N3lqODNmYjJnYWNzM28wNSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/Lv2VhwHrt6ljhvZ6LF/giphy.gif",
+            "https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExNWJhZmt3dzBjN2l2OGJ1ZHNrbTlwaXJkZnQ0amNzdWxtOG93cWY1aSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/iVddRfGnwPd4TnZFpo/giphy.gif"
+        ];
+        
+        // Create floating GIFs in the background
+        function createFloatingGifs() {
+            // Clear existing GIFs
+            gifContainer.innerHTML = '';
+            
+            // Create 8 floating GIFs with random positions and movements
+            for (let i = 0; i < 8; i++) {
+                const gif = document.createElement('img');
+                const randomGifUrl = gifUrls[Math.floor(Math.random() * gifUrls.length)];
+                gif.src = randomGifUrl;
+                gif.classList.add('floating-gif');
+                
+                // Random position
+                const randomX = Math.random() * 100;
+                const randomY = Math.random() * 100;
+                
+                // Random size
+                const randomSize = 50 + Math.random() * 60;
+                
+                // Random animation duration
+                const randomDuration = 15 + Math.random() * 25;
+                
+                // Random animation delay
+                const randomDelay = Math.random() * 5;
+                
+                gif.style.width = `${randomSize}px`;
+                gif.style.height = `${randomSize}px`;
+                gif.style.left = `${randomX}%`;
+                gif.style.top = `${randomY}%`;
+                gif.style.animation = `float ${randomDuration}s ease-in-out ${randomDelay}s infinite`;
+                gif.style.opacity = 0.4 + Math.random() * 0.3;
+                
+                gifContainer.appendChild(gif);
+            }
+        }
+        
+        // Initialize floating GIFs
+        createFloatingGifs();
+        
+        // Change GIFs every 20 seconds for variety
+        setInterval(createFloatingGifs, 20000);
+
+        const texts = [
+            "Soch lo acche se! 🙄",
+            "Ek aur baar Soch lo! 🥺",
+            "Man jao na! Kitna bhav khaogi 😭",
+            "Dil tod diya tumne 💔",
+            "Last chance! Yes bolo! 😡"
+        ];
+        let textIndex = 0;
+
+        function moveButton() {
+            const w = window.innerWidth;
+            const h = window.innerHeight;
+            
+            const btnWidth = noBtn.offsetWidth;
+            const btnHeight = noBtn.offsetHeight;
+
+            const randomX = Math.floor(Math.random() * (w - btnWidth - 40)) + 20;
+            const randomY = Math.floor(Math.random() * (h - btnHeight - 40)) + 20;
+
+            noBtn.style.position = 'fixed';
+            noBtn.style.left = `${randomX}px`;
+            noBtn.style.top = `${randomY}px`;
+            noBtn.style.zIndex = '100';
+
+            if (textIndex < texts.length) {
+                question.innerText = texts[textIndex];
+                textIndex++;
+            }
+        }
+
+        noBtn.addEventListener('mouseover', moveButton);
+        noBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            moveButton();
+        });
+
+        yesBtn.addEventListener('click', () => {
+            // 1. Change visual state
+            mainImg.src = "https://files.catbox.moe/sh31gz.jpg";
+            question.innerText = "Yay! I knew it! Love you! 💖";
+            document.querySelector('.btn-group').style.display = 'none';
+            
+            // 2. Display a success GIF
+            const successGif = document.createElement('img');
+            successGif.src = gifUrls[Math.floor(Math.random() * gifUrls.length)];
+            successGif.classList.add('success-gif');
+            successGif.style.animation = 'float 4s ease-in-out infinite';
+            
+            // Insert the success GIF after the question
+            question.insertAdjacentElement('afterend', successGif);
+            
+            // 3. Clear floating GIFs and create celebration GIFs
+            gifContainer.innerHTML = '';
+            for (let i = 0; i < 15; i++) {
+                const celebrationGif = document.createElement('img');
+                const randomGifUrl = gifUrls[Math.floor(Math.random() * gifUrls.length)];
+                celebrationGif.src = randomGifUrl;
+                celebrationGif.classList.add('floating-gif');
+                
+                // Random position
+                const randomX = Math.random() * 100;
+                const randomY = Math.random() * 100;
+                
+                // Random size for celebration
+                const randomSize = 60 + Math.random() * 100;
+                
+                // Random animation
+                const randomDuration = 8 + Math.random() * 12;
+                const randomDelay = Math.random() * 3;
+                
+                celebrationGif.style.width = `${randomSize}px`;
+                celebrationGif.style.height = `${randomSize}px`;
+                celebrationGif.style.left = `${randomX}%`;
+                celebrationGif.style.top = `${randomY}%`;
+                celebrationGif.style.animation = `float ${randomDuration}s ease-in-out ${randomDelay}s infinite`;
+                celebrationGif.style.opacity = 0.7 + Math.random() * 0.3;
+                celebrationGif.style.zIndex = '5';
+                
+                gifContainer.appendChild(celebrationGif);
+            }
+
+            // 4. Blast Emojis (The Fix)
+            jsConfetti.addConfetti({
+                emojis: ['❤️', '💕', '😻', '🌹', '🥰', '💝'],
+                emojiSize: 50,
+                confettiNumber: 100,
+            });
+            
+            // Optional: Blast again after a small delay for dramatic effect
+            setTimeout(() => {
+                jsConfetti.addConfetti({
+                    emojis: ['❤️', '💖', '💞'],
+                    emojiSize: 80,
+                    confettiNumber: 50,
+                });
+            }, 500);
+            
+            // Blast again after 2 seconds
+            setTimeout(() => {
+                jsConfetti.addConfetti({
+                    confettiColors: ['#ff4d6d', '#ff8fa3', '#ffccd5'],
+                    confettiNumber: 80,
+                });
+            }, 2000);
+        });
+    </script>
+</body>
+</html>
